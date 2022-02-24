@@ -1,4 +1,5 @@
 const main = async () => {
+  const [owner, superCoder] = await hre.ethers.getSigners();
   const domainContractFactory = await hre.ethers.getContractFactory("Domains");
   // We pass in "ninja" to the constructor when deploying
   const domainContract = await domainContractFactory.deploy("build");
@@ -8,15 +9,45 @@ const main = async () => {
 
   // We're passing in a second variable - value. This is the moneyyyyyyyyyy
   let txn = await domainContract.register("tomi", {
-    value: hre.ethers.utils.parseEther("0.003"),
+    value: hre.ethers.utils.parseEther("1000"),
   });
   await txn.wait();
+  console.log("Minted domain tomi");
 
   const address = await domainContract.getAddress("tomi");
   console.log("Owner of domain tomi:", address);
 
-  const balance = await hre.ethers.provider.getBalance(domainContract.address);
-  console.log("Contract balance:", hre.ethers.utils.formatEther(balance));
+  console.log("Attempting to rob contract");
+  try {
+    txn = await domainContract.connect(superCoder).withdraw();
+    await txn.wait();
+    console.log("Robbed contract");
+  } catch (error) {
+    console.log("Could not rob contract");
+  }
+
+  let ownerBalance = await hre.ethers.provider.getBalance(owner.address);
+  console.log(
+    "Balance of owner before withdrawal:",
+    hre.ethers.utils.formatEther(ownerBalance)
+  );
+
+  txn = await domainContract.connect(owner).withdraw();
+  await txn.wait();
+
+  const contractBalance = await hre.ethers.provider.getBalance(
+    domainContract.address
+  );
+  ownerBalance = await hre.ethers.provider.getBalance(owner.address);
+
+  console.log(
+    "Contract balance after withdrawal:",
+    hre.ethers.utils.formatEther(contractBalance)
+  );
+  console.log(
+    "Balance of owner after withdrawal:",
+    hre.ethers.utils.formatEther(ownerBalance)
+  );
 };
 
 const runMain = async () => {
