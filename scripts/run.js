@@ -16,6 +16,18 @@ const main = async () => {
 
   const address = await domainContract.getAddress("tomi");
   console.log("Owner of domain tomi:", address);
+  txn = await domainContract.setRecord("tomi", "Give me the hammer");
+
+  try {
+    txn = await domainContract
+      .connect(superCoder)
+      .setRecord("tomi", "I am the owner");
+    await txn.wait();
+    console.log("Robbed domain");
+  } catch (error) {
+    console.error(error.message);
+    console.log("Could not rob domain");
+  }
 
   console.log("Attempting to rob contract");
   try {
@@ -23,6 +35,7 @@ const main = async () => {
     await txn.wait();
     console.log("Robbed contract");
   } catch (error) {
+    console.error(error.message);
     console.log("Could not rob contract");
   }
 
